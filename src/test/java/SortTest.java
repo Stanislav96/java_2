@@ -1,5 +1,6 @@
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 
@@ -9,119 +10,106 @@ import static org.junit.Assert.assertTrue;
  * Created by User on 14.09.2015.
  */
 
-class MyComparator implements Comparator<Integer>
-{
-  public int compare(Integer a, Integer b)
-  {
+class IntComparator implements Comparator<Integer> {
+  public int compare(Integer a, Integer b) {
     return Integer.compare(a, b);
   }
 }
-public class SortTest
-{
+class DblComparator implements Comparator<Double> {
+  public int compare(Double a, Double b) {
+    return Double.compare(a, b);
+  }
+}
 
-  @Test
-  public static void TestNull()
-  {
-    Sort.StoogeSort(null, null);
-    Sort.HeapSort(null, null);
+public class SortTest {
+
+  public static void testNull(final Sorter sorter) {
+    final IntComparator c = new IntComparator();
+    final Integer[] array = new Integer[0];
+    sorter.sort(array, c);
   }
 
-  @Test
-  public static void TestReverse()
-  {
-    MyComparator c = new MyComparator();
-    Integer[] array = {7, 5, 4, 4, 2, 1};
-    Integer[] arrayCopy = array.clone();
-    Sort.StoogeSort(arrayCopy, c);
-    assertTrue(CheckSorted(arrayCopy));
-    assertTrue(CheckEqual(array, arrayCopy));
-    arrayCopy = array.clone();
-    Sort.HeapSort(arrayCopy, c);
-    assertTrue(CheckSorted(arrayCopy));
-    assertTrue(CheckEqual(array, arrayCopy));
+  public static void testReverse(final Sorter sorter) {
+    final IntComparator c = new IntComparator();
+    final Integer[] array = {7, 5, 4, 4, 2, 1};
+    sorter.sort(array, c);
+    assertTrue(checkSorted(array, c));
   }
 
-  @Test
-  public static void TestSorted()
-  {
-    MyComparator c = new MyComparator();
-    Integer[] array = {1, 2, 2, 4, 5, 8};
-    Integer[] arrayCopy = array.clone();
-    Sort.StoogeSort(arrayCopy, c);
-    assertTrue(CheckSorted(arrayCopy));
-    assertTrue(CheckEqual(array, arrayCopy));
-    arrayCopy = array.clone();
-    Sort.HeapSort(arrayCopy, c);
-    assertTrue(CheckSorted(arrayCopy));
-    assertTrue(CheckEqual(array, arrayCopy));
+  public static void testSorted(final Sorter sorter) {
+    final IntComparator c = new IntComparator();
+    final Integer[] array = {1, 2, 2, 4, 5, 8};
+    sorter.sort(array, c);
+    assertTrue(checkSorted(array, c));
+    assertTrue(checkEqual(array, array));
   }
 
-  @Test
-  public static void TestShouldBeSorted()
-  {
-    MyComparator c = new MyComparator();
-    Integer[] array = new Integer[10];
-    Random rand = new Random(System.currentTimeMillis());
-    for (int i = 0; i < array.length; ++i)
-    {
-      array[i] = rand.nextInt();
+  public static void testShouldBeSorted(final Sorter sorter) {
+    final IntComparator iC = new IntComparator();
+    final DblComparator dC = new DblComparator();
+    final Integer[] iArray = new Integer[10];
+    final Random rand = new Random(System.currentTimeMillis());
+    for (int i = 0; i < iArray.length; ++i) {
+      iArray[i] = rand.nextInt();
     }
-    Integer[] arrayCopy = array.clone();
-    Sort.StoogeSort(arrayCopy, c);
-    assertTrue(CheckSorted(arrayCopy));
-    assertTrue(CheckEqual(array, arrayCopy));
-    arrayCopy = array.clone();
-    Sort.HeapSort(arrayCopy, c);
-    assertTrue(CheckSorted(arrayCopy));
-    assertTrue(CheckEqual(array, arrayCopy));
+    sorter.sort(iArray, iC);
+    assertTrue(checkSorted(iArray, iC));
+    assertTrue(checkEqual(iArray, iArray));
+    final Double[] dArray = new Double[10];
+    for (int i = 0; i < dArray.length; ++i) {
+      dArray[i] = rand.nextDouble();
+    }
+    sorter.sort(dArray, dC);
+    assertTrue(checkSorted(dArray, dC));
+    assertTrue(checkEqual(dArray, dArray));
   }
 
-  private static <T> boolean CheckSorted(final Integer[] array)
-  {
-    for (int i = 0; i < array.length - 1; ++i)
-    {
-      if (array[i] > array[i + 1])
-      {
+  @Test
+  public static void mainTest() {
+    final HeapSorter heapSorter = new HeapSorter();
+    final StoogeSorter stoogeSorter = new StoogeSorter();
+    testNull(heapSorter);
+    testReverse(heapSorter);
+    testSorted(heapSorter);
+    testShouldBeSorted(heapSorter);
+    testNull(stoogeSorter);
+    testReverse(stoogeSorter);
+    testSorted(stoogeSorter);
+    testShouldBeSorted(stoogeSorter);
+  }
+
+  private static <T> boolean checkSorted(final T[] array, final Comparator<T> c) {
+    for (int i = 0; i < array.length - 1; ++i) {
+      if (c.compare(array[i], array[i + 1]) > 0) {
         return false;
       }
     }
     return true;
   }
 
-  private static boolean CheckEqual(final Integer[] array, final Integer[] arrayCopy)
-  {
-    if (array.length != arrayCopy.length)
-    {
+  private static <T> boolean checkEqual(final T[] array, final T[] arrayCopy) {
+    if (array.length != arrayCopy.length) {
       return false;
     }
-    for (int i = 0; i < array.length; ++i)
-    {
-      if (Count(array, array[i]) != Count(arrayCopy, array[i]))
-      {
+    for (int i = 0; i < array.length; ++i) {
+      if (count(array, array[i]) != count(arrayCopy, array[i])) {
         return false;
       }
     }
     return true;
   }
 
-  private static int Count(final Integer[] array, Integer elem)
-  {
+  private static <T> int count(final T[] array, final T elem) {
     int count = 0;
-    for (int i = 0; i < array.length; ++i)
-    {
-      if (array[i].equals(elem))
-      {
+    for (int i = 0; i < array.length; ++i) {
+      if (array[i].equals(elem)) {
         ++count;
       }
     }
     return count;
   }
 
-  public static void main(String[] args)
-  {
-    TestNull();
-    TestReverse();
-    TestSorted();
-    TestShouldBeSorted();
+  public static void main(String[] args) {
+    mainTest();
   }
 }
